@@ -1,36 +1,44 @@
+// 1. Load environment variables first (JWT_SECRET, DATABASE_URL, etc.)
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-const { PrismaClient } = require("@prisma/client");
-const ordersRoute = require("./routes/orders");
-const productsRoute = require("./routes/products");
 
+// 2. Import all your route modules
+const authRoutes = require("./routes/auth");
+const categoriesRoutes = require("./routes/categories");
+const productsRoutes = require("./routes/products");
+const ordersRoutes = require("./routes/orders");
 
-const prisma = new PrismaClient();
 const app = express();
+const PORT = process.env.PORT || 3000;
 
+// 3. Global Middleware
 app.use(cors());
 app.use(express.json());
-app.use("/orders", ordersRoute);
-app.use("/products", productsRoute);
 
-app.get("/test", (req, res) => {
-  res.json({ ok: true });
+// 4. Mount the routes to specific URL paths
+// Traffic to http://localhost:3000/auth/... goes to authRoutes
+app.use("/auth", authRoutes);
+
+// Traffic to http://localhost:3000/categories/... goes to categoriesRoutes
+app.use("/categories", categoriesRoutes);
+
+// Traffic to http://localhost:3000/products/... goes to productsRoutes
+app.use("/products", productsRoutes);
+
+// Traffic to http://localhost:3000/orders/... goes to ordersRoutes
+app.use("/orders", ordersRoutes);
+
+// 5. Base Health-Check Route (Useful for testing if the server is up)
+app.get("/", (req, res) => {
+  res.json({
+    message: "СкладПро (Logistics Center) API is running smoothly!",
+    status: "active",
+  });
 });
 
-async function start() {
-  try {
-    console.log("Starting backend...");
-
-    await prisma.$connect();
-
-    app.listen(3000, () => {
-      console.log("Server running on http://localhost:3000");
-    });
-
-  } catch (err) {
-    console.error("❌ BACKEND CRASH:");
-    console.error(err);
-  }
-}
-
-start();
+// 6. Start the Express server
+app.listen(PORT, () => {
+  console.log(`🚀 Backend server is running on http://localhost:${PORT}`);
+});

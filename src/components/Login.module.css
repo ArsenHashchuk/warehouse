@@ -1,0 +1,50 @@
+.container {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-main); /* Uses global theme variable */
+}
+
+.formCard {
+  background: var(--bg-card);
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+}
+
+.logoIcon {
+  font-size: 40px;
+  color: var(--accent-primary);
+}
+
+.title {
+  margin: 10px 0 5px;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.error {
+  color: #ef4444;
+  font-size: 13px;
+  text-align: center;
+}
+
+.submitBtn {
+  padding: 12px;
+  width: 100%;
+}
