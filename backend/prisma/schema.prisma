@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 7. Roles: Tech Admin vs Warehouse Worker
+enum Role {
+  ADMIN
+  WORKER
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String // Hashed password
+  role     Role   @default(WORKER)
+}
+
+// 9. Categories for products
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+// 2 & 3. Products now belong to categories and have stock tracking
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+  stockAmount Int      @default(0) // Obлік залишків
+  minStock    Int      @default(10) // For the auto-order bonus task
+
+  orderItems    OrderItem[]
+  transferItems TransferItem[]
+}
+
+// 5 & 6. Orders (Inbound from suppliers)
+model Order {
+  id         Int         @id @default(autoincrement())
+  orderDate  DateTime    @default(now())
+  status     String      @default("PENDING") // PENDING, RECEIVED
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// 4 & 8. Transfers (Outbound to stores)
+model Store {
+  id        Int        @id @default(autoincrement())
+  name      String
+  location  String
+  transfers Transfer[]
+}
+
+model Transfer {
+  id           Int            @id @default(autoincrement())
+  transferDate DateTime       @default(now())
+  storeId      Int
+  status       String         @default("SHIPPED")
+  store        Store          @relation(fields: [storeId], references: [id])
+  items        TransferItem[]
+}
+
+model TransferItem {
+  id         Int      @id @default(autoincrement())
+  transferId Int
+  productId  Int
+  quantity   Int
+  transfer   Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id])
+}
