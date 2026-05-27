@@ -23,6 +23,7 @@ import Login from "./components/Login";
 import Catalog from "./components/Catalog";
 import Transfers from "./components/Transfers";
 import UsersManagement from "./components/UsersManagement";
+import OrderHistory from "./components/OrderHistory";
 import useAppStore from "./store/useAppStore";
 
 export default function WarehouseSystem() {
@@ -301,6 +302,13 @@ export default function WarehouseSystem() {
             <ArrowRightLeft size={18} style={{ marginRight: "8px" }} /> Store
             Transfers
           </div>
+          <div
+            className={`${styles.navItem} ${page === "history" ? styles.navItemActive : ""}`}
+            onClick={() => setPage("history")}
+          >
+            <ClipboardList size={18} style={{ marginRight: "8px" }} /> Order
+            History
+          </div>
 
           {user.role === "ADMIN" && (
             <>
@@ -350,6 +358,12 @@ export default function WarehouseSystem() {
                 products={products}
                 onTransferCreated={handleTransferCreated}
               />
+            </div>
+          )}
+          {page === "history" && (
+            <div>
+              <h2 className={styles.pageHeader}>Order History</h2>
+              <OrderHistory />
             </div>
           )}
 

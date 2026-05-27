@@ -60,7 +60,6 @@ router.delete("/:id", authenticate, authorize(["ADMIN"]), async (req, res) => {
     });
     res.json({ message: "Category deleted successfully" });
   } catch (err) {
-    // If Prisma throws a foreign key constraint error, catch it
     if (err.code === "P2003") {
       return res
         .status(400)

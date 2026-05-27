@@ -59,14 +59,32 @@ router.post("/", authenticate, async (req, res) => {
           updatedProduct.autoOrder &&
           updatedProduct.stockAmount < updatedProduct.minStock
         ) {
+          const neededQuantity =
+            updatedProduct.minStock - updatedProduct.stockAmount;
+
           const existingPendingOrder = await tx.order.findFirst({
             where: {
               status: "PENDING",
               orderItems: { some: { productId: productId } },
             },
+            include: { orderItems: true },
           });
 
-          if (!existingPendingOrder) {
+          if (existingPendingOrder) {
+            const itemToUpdate = existingPendingOrder.orderItems.find(
+              (i) => i.productId === productId,
+            );
+
+            if (itemToUpdate) {
+              await tx.orderItem.update({
+                where: { id: itemToUpdate.id },
+                data: { quantity: neededQuantity },
+              });
+              console.log(
+                `Updated quantity for existing auto-order: ${updatedProduct.name}`,
+              );
+            }
+          } else {
             await tx.order.create({
               data: {
                 status: "PENDING",
@@ -75,8 +93,7 @@ router.post("/", authenticate, async (req, res) => {
                   create: [
                     {
                       productId: productId,
-                      quantity:
-                        updatedProduct.minStock - updatedProduct.stockAmount,
+                      quantity: neededQuantity,
                     },
                   ],
                 },

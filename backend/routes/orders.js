@@ -1,5 +1,6 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
+const { authenticate } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -74,14 +75,35 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/all", authenticate, async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        orderItems: {
+          include: { product: true },
+        },
+      },
+      orderBy: { orderDate: "desc" },
+    });
+    res.json(orders || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error", details: err.message });
+  }
+});
+
 // Get order by id
 router.get("/:id", async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const orderId = Number(req.params.id);
+
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
 
     const order = await prisma.order.findUnique({
       where: {
-        id,
+        id: orderId,
       },
       include: {
         orderItems: {
@@ -93,18 +115,13 @@ router.get("/:id", async (req, res) => {
     });
 
     if (!order) {
-      return res.status(404).json({
-        error: "Order not found",
-      });
+      return res.status(404).json({ error: "Order not found" });
     }
 
     res.json(order);
   } catch (error) {
     console.error(error);
-
-    res.status(500).json({
-      error: "Server error",
-    });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
