@@ -18,6 +18,7 @@ import Orders, {
   type Order,
   type Product,
 } from "./components/Orders";
+import Inventory from "./components/Inventory";
 import Login from "./components/Login";
 import Catalog from "./components/Catalog";
 import useAppStore from "./store/useAppStore";
@@ -317,11 +318,7 @@ export default function WarehouseSystem() {
               />
             </div>
           )}
-          {page === "inventory" && (
-            <div>
-              <h2 className={styles.pageHeader}>Inventory</h2>
-            </div>
-          )}
+          {page === "inventory" && <Inventory />}
           {page === "stock" && (
             <div>
               <h2 className={styles.pageHeader}>Current Stock</h2>

@@ -1,4 +1,3 @@
-// 1. Load environment variables first (JWT_SECRET, DATABASE_URL, etc.)
 require("dotenv").config();
 
 const express = require("express");
@@ -33,7 +32,7 @@ app.use("/orders", ordersRoutes);
 // 5. Base Health-Check Route (Useful for testing if the server is up)
 app.get("/", (req, res) => {
   res.json({
-    message: "СкладПро (Logistics Center) API is running smoothly!",
+    message: "WarehousePro (Logistics Center) API is running smoothly!",
     status: "active",
   });
 });
