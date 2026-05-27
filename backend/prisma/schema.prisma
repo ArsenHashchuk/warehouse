@@ -57,7 +57,6 @@ model OrderItem {
   @@map("order_items")
 }
 
-// 4 & 8. Transfers (Outbound to stores)
 model Store {
   id        Int        @id @default(autoincrement())
   name      String

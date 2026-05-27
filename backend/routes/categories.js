@@ -5,7 +5,7 @@ const { authenticate, authorize } = require("../middleware/authMiddleware");
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// get all categories (Accessible to all logged-in users)
+// get all categories
 router.get("/", authenticate, async (req, res) => {
   try {
     const categories = await prisma.category.findMany({
@@ -21,7 +21,7 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-// create category (STRICTLY ADMIN ONLY)
+// create category - admin
 router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
   try {
     const { name } = req.body;
@@ -30,7 +30,6 @@ router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
       return res.status(400).json({ error: "Category name is required" });
     }
 
-    // Check if category already exists to avoid Prisma unique constraint errors
     const existingCategory = await prisma.category.findUnique({
       where: { name: name.trim() },
     });
@@ -52,7 +51,7 @@ router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
   }
 });
 
-// Delete a category (ADMIN ONLY)
+// Delete a category admin
 router.delete("/:id", authenticate, authorize(["ADMIN"]), async (req, res) => {
   try {
     await prisma.category.delete({

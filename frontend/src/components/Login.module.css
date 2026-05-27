@@ -3,7 +3,7 @@
   height: 100vh;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-main); /* Uses global theme variable */
+  background-color: var(--bg-main);
 }
 
 .formCard {

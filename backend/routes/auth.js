@@ -6,10 +6,9 @@ const { PrismaClient } = require("@prisma/client");
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Pulling the secret from the .env file
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Реєстрація (Register)
+// Registration
 router.post("/register", async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -18,22 +17,19 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // 1. Check if user exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    // 2. Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 3. Create user
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        role: role || "WORKER", // Default to worker if not specified
+        role: role || "WORKER",
       },
     });
 

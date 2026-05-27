@@ -171,7 +171,7 @@ export default function Orders({
         </table>
       </div>
 
-      {/* SUBMIT CONFIRMATION MODAL */}
+      {/* submit confirmation modal */}
       {isSubmitModalOpen && (
         <div className="modal-overlay">
           <div className="modal-card">
@@ -194,7 +194,7 @@ export default function Orders({
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* delet confirmation modal */}
       {deleteTargetId && (
         <div className="modal-overlay">
           <div className="modal-card">

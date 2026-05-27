@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 
-// 1. Перевірка токена (Is the user logged in?)
 const authenticate = (req, res, next) => {
   const authHeader = req.header("Authorization");
   if (!authHeader) {

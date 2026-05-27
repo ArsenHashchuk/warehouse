@@ -30,7 +30,7 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-// Delete a store (ADMIN ONLY)
+// Delete a store (admin)
 router.delete("/:id", authenticate, authorize(["ADMIN"]), async (req, res) => {
   try {
     await prisma.store.delete({

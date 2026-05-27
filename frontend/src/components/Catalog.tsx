@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Tags, PackagePlus, Store, Trash2 } from "lucide-react";
 import useAppStore from "../store/useAppStore";
 import styles from "./Catalog.module.css";
+import { API_URL } from "../config";
 
 interface Category {
   id: number;
@@ -33,7 +34,6 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [stores, setStores] = useState<StoreData[]>([]);
 
-  // Modal States
   const [deleteTarget, setDeleteTarget] = useState<{
     type: "categories" | "products" | "stores";
     id: number;
@@ -77,9 +77,9 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     };
     try {
       const [catRes, prodRes, storeRes] = await Promise.all([
-        fetch("http://localhost:3000/categories", { headers }),
-        fetch("http://localhost:3000/products", { headers }),
-        fetch("http://localhost:3000/stores", { headers }),
+        fetch(`${API_URL}/categories`, { headers }),
+        fetch(`${API_URL}/products`, { headers }),
+        fetch(`${API_URL}/stores`, { headers }),
       ]);
       setCategories(await catRes.json());
       setProducts(await prodRes.json());
@@ -104,7 +104,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     if (!deleteTarget) return;
     try {
       const res = await fetch(
-        `http://localhost:3000/${deleteTarget.type}/${deleteTarget.id}`,
+        `${API_URL}/${deleteTarget.type}/${deleteTarget.id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -137,7 +137,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     e.preventDefault();
     setCategoryMsg({ type: "", text: "" });
     try {
-      const res = await fetch("http://localhost:3000/categories", {
+      const res = await fetch(`${API_URL}/categories`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -165,7 +165,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     e.preventDefault();
     setProductMsg({ type: "", text: "" });
     try {
-      const res = await fetch("http://localhost:3000/products", {
+      const res = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -202,7 +202,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     e.preventDefault();
     setStoreMsg({ type: "", text: "" });
     try {
-      const res = await fetch("http://localhost:3000/stores", {
+      const res = await fetch(`${API_URL}/stores`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import useAppStore from "../store/useAppStore";
 import styles from "./Inventory.module.css";
+import { API_URL } from "../config";
 
 interface Category {
   id: number;
@@ -42,8 +43,8 @@ export default function Inventory() {
 
       try {
         const [prodRes, catRes] = await Promise.all([
-          fetch("http://localhost:3000/products", { headers }),
-          fetch("http://localhost:3000/categories", { headers }),
+          fetch(`${API_URL}/products`, { headers }),
+          fetch(`${API_URL}/categories`, { headers }),
         ]);
 
         const prodData = await prodRes.json();

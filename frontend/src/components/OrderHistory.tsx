@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import useAppStore from "../store/useAppStore";
 import styles from "./OrderHistory.module.css";
+import { API_URL } from "../config";
 
 interface Product {
   name: string;
@@ -28,7 +29,7 @@ export default function OrderHistory() {
     if (!token) return;
     void (async () => {
       try {
-        const res = await fetch("http://localhost:3000/orders/all", {
+        const res = await fetch(`${API_URL}/orders/all`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

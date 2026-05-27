@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Warehouse } from "lucide-react";
 import useAppStore from "../store/useAppStore";
 import styles from "./Login.module.css";
+import { API_URL } from "../config";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -15,7 +16,7 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3000/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -43,7 +44,6 @@ export default function Login() {
     <div className={styles.container}>
       <form onSubmit={handleSubmit} className={styles.formCard}>
         <div className={styles.header}>
-          {/* LUCIDE ICON */}
           <Warehouse size={40} className={styles.logoIcon} />
           <h2 className={styles.title}>WarehousePro</h2>
           <p className={styles.subtitle}>Logistics center</p>

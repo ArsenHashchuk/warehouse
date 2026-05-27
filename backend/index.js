@@ -14,7 +14,14 @@ const usersRoutes = require("./routes/users");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const allowedOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 app.use("/auth", authRoutes);
@@ -33,5 +40,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Backend server is running on port: ${PORT}`);
 });

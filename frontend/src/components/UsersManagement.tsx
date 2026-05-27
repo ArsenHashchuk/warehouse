@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Users, ShieldUser, Trash2 } from "lucide-react";
 import useAppStore from "../store/useAppStore";
 import styles from "./UsersManagement.module.css";
+import { API_URL } from "../config";
 
 interface UserData {
   id: number;
@@ -31,7 +32,7 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:3000/users", {
+      const res = await fetch(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setUsersList(await res.json());
@@ -44,7 +45,7 @@ export default function UsersManagement() {
     if (!token) return;
     void (async () => {
       try {
-        const res = await fetch("http://localhost:3000/users", {
+        const res = await fetch(`${API_URL}/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) setUsersList(await res.json());
@@ -67,7 +68,7 @@ export default function UsersManagement() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/users", {
+      const res = await fetch(`${API_URL}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,13 +89,10 @@ export default function UsersManagement() {
   const executeDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(
-        `http://localhost:3000/users/${deleteTarget.id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${user?.token}` },
-        },
-      );
+      const res = await fetch(`${API_URL}/users/${deleteTarget.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
       if (!res.ok) throw new Error("Cannot delete this user");
 
       setDeleteTarget(null);

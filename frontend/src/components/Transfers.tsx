@@ -10,6 +10,7 @@ import {
 import useAppStore from "../store/useAppStore";
 import styles from "./Transfers.module.css";
 import { type Product, type NewItem, type Order } from "./Orders";
+import { API_URL } from "../config";
 
 interface StoreData {
   id: number;
@@ -59,9 +60,9 @@ export default function Transfers({
       };
       try {
         const [transfersRes, storesRes, pendingRes] = await Promise.all([
-          fetch("http://localhost:3000/transfers", { headers }),
-          fetch("http://localhost:3000/stores", { headers }),
-          fetch("http://localhost:3000/orders/pending-receipts", { headers }),
+          fetch(`${API_URL}/transfers`, { headers }),
+          fetch(`${API_URL}/stores`, { headers }),
+          fetch(`${API_URL}/orders/pending-receipts`, { headers }),
         ]);
         setTransfers(await transfersRes.json());
         setStores(await storesRes.json());
@@ -91,13 +92,10 @@ export default function Transfers({
   // Receive Inbound Order from Supplier
   const receiveInboundOrder = async (orderId: number) => {
     try {
-      const res = await fetch(
-        `http://localhost:3000/orders/${orderId}/receive`,
-        {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${user?.token}` },
-        },
-      );
+      const res = await fetch(`${API_URL}/orders/${orderId}/receive`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
 
       if (!res.ok) throw new Error("Failed to receive order");
 
@@ -127,7 +125,7 @@ export default function Transfers({
       (item) => item.productId !== "" && item.quantity > 0,
     );
     try {
-      const res = await fetch("http://localhost:3000/transfers", {
+      const res = await fetch(`${API_URL}/transfers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -145,7 +143,7 @@ export default function Transfers({
         const errData = await res.json();
         throw new Error(errData.error || "Failed to create transfer");
       }
-      const refreshRes = await fetch("http://localhost:3000/transfers", {
+      const refreshRes = await fetch(`${API_URL}/transfers`, {
         headers: { Authorization: `Bearer ${user?.token}` },
       });
       setTransfers(await refreshRes.json());
@@ -159,7 +157,7 @@ export default function Transfers({
 
   const receiveTransfer = async (id: number) => {
     try {
-      await fetch(`http://localhost:3000/transfers/${id}/receive`, {
+      await fetch(`${API_URL}/transfers/${id}/receive`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${user?.token}` },
       });
@@ -173,7 +171,7 @@ export default function Transfers({
 
   return (
     <>
-      {/* INBOUND DELIVERIES BLOCK (Pending Supplier Orders) */}
+      {/* Inbound deliveries block */}
       <div className={styles.card} style={{ marginBottom: "20px" }}>
         <h3
           className={styles.sectionTitle}
@@ -251,7 +249,7 @@ export default function Transfers({
         )}
       </div>
 
-      {/* DISPATCH TRANSFER BLOCK */}
+      {/* dispatch transfer block */}
       <div className={styles.card}>
         <h3 className={styles.sectionTitle}>
           <Truck size={20} color="var(--accent-primary)" /> Dispatch New
@@ -331,7 +329,7 @@ export default function Transfers({
         </div>
       </div>
 
-      {/* ACTIVE TRANSFERS TABLE */}
+      {/* active transfers table */}
       <div className={styles.tableContainer} style={{ marginTop: "20px" }}>
         <table className={styles.table}>
           <thead>
@@ -429,7 +427,7 @@ export default function Transfers({
         </table>
       </div>
 
-      {/* DISPATCH CONFIRMATION MODAL */}
+      {/* dispatch confirmation modal */}
       {isConfirmOpen && (
         <div className="modal-overlay">
           <div className="modal-card">

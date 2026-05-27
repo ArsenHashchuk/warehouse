@@ -25,6 +25,7 @@ import Transfers from "./components/Transfers";
 import UsersManagement from "./components/UsersManagement";
 import OrderHistory from "./components/OrderHistory";
 import useAppStore from "./store/useAppStore";
+import { API_URL } from "./config";
 
 export default function WarehouseSystem() {
   const { user, logout, theme, setTheme } = useAppStore();
@@ -47,7 +48,7 @@ export default function WarehouseSystem() {
   const refreshProducts = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:3000/products", {
+      const res = await fetch(`${API_URL}/products`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -63,7 +64,7 @@ export default function WarehouseSystem() {
   const refreshOrders = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:3000/orders", {
+      const res = await fetch(`${API_URL}/orders`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -87,13 +88,13 @@ export default function WarehouseSystem() {
     const fetchInitialData = async () => {
       try {
         const [ordersRes, productsRes] = await Promise.all([
-          fetch("http://localhost:3000/orders", {
+          fetch(`${API_URL}/orders`, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch("http://localhost:3000/products", {
+          fetch(`${API_URL}/products`, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -144,7 +145,7 @@ export default function WarehouseSystem() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/orders", {
+      const res = await fetch(`${API_URL}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,7 +164,7 @@ export default function WarehouseSystem() {
         throw new Error(errorData.error || "Failed to create order");
       }
 
-      const refreshRes = await fetch("http://localhost:3000/orders", {
+      const refreshRes = await fetch(`${API_URL}/orders`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -188,7 +189,7 @@ export default function WarehouseSystem() {
 
   const deleteOrder = async (id: number) => {
     try {
-      await fetch(`http://localhost:3000/orders/${id}`, {
+      await fetch(`${API_URL}/orders/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -276,9 +277,9 @@ export default function WarehouseSystem() {
         </div>
       </div>
 
-      {/* BODY */}
+      {/* body */}
       <div className={styles.bodyWrapper}>
-        {/* SIDEBAR */}
+        {/* sidebar */}
         <div className={styles.sidebar}>
           <div className={styles.navSection}>Main Menu</div>
 
@@ -333,7 +334,7 @@ export default function WarehouseSystem() {
           )}
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* main content */}
         <div className={styles.mainContent}>
           {page === "orders" && (
             <div>
@@ -373,7 +374,7 @@ export default function WarehouseSystem() {
           {page === "users" && user.role === "ADMIN" && <UsersManagement />}
         </div>
       </div>
-      {/* GLOBAL APP INFO MODAL */}
+      {/* app info modal */}
       {appAlert && (
         <div className="modal-overlay" style={{ zIndex: 99999 }}>
           <div className="modal-card">
