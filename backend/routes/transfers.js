@@ -22,7 +22,7 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-// Create a new transfer and deduct stock
+// Create a new transfer and check for auto-orders
 router.post("/", authenticate, async (req, res) => {
   try {
     const { storeId, items } = req.body;
@@ -31,18 +31,6 @@ router.post("/", authenticate, async (req, res) => {
       return res.status(400).json({ error: "Store ID and items are required" });
     }
 
-    for (let item of items) {
-      const product = await prisma.product.findUnique({
-        where: { id: Number(item.productId) },
-      });
-      if (!product || product.stockAmount < item.quantity) {
-        return res.status(400).json({
-          error: `Insufficient stock for product ID #${item.productId}. Available: ${product?.stockAmount || 0}`,
-        });
-      }
-    }
-
-    // Perform a transaction
     const result = await prisma.$transaction(async (tx) => {
       const transfer = await tx.transfer.create({
         data: {
@@ -58,12 +46,47 @@ router.post("/", authenticate, async (req, res) => {
         include: { store: true, items: { include: { product: true } } },
       });
 
-      // Deduct inventory
       for (let item of items) {
-        await tx.product.update({
-          where: { id: Number(item.productId) },
-          data: { stockAmount: { decrement: Number(item.quantity) } },
+        const productId = Number(item.productId);
+        const quantity = Number(item.quantity);
+
+        const updatedProduct = await tx.product.update({
+          where: { id: productId },
+          data: { stockAmount: { decrement: quantity } },
         });
+
+        if (
+          updatedProduct.autoOrder &&
+          updatedProduct.stockAmount < updatedProduct.minStock
+        ) {
+          const existingPendingOrder = await tx.order.findFirst({
+            where: {
+              status: "PENDING",
+              orderItems: { some: { productId: productId } },
+            },
+          });
+
+          if (!existingPendingOrder) {
+            await tx.order.create({
+              data: {
+                status: "PENDING",
+                orderDate: new Date(),
+                orderItems: {
+                  create: [
+                    {
+                      productId: productId,
+                      quantity:
+                        updatedProduct.minStock - updatedProduct.stockAmount,
+                    },
+                  ],
+                },
+              },
+            });
+            console.log(
+              `Auto-order created for product: ${updatedProduct.name}`,
+            );
+          }
+        }
       }
 
       return transfer;
@@ -76,7 +99,7 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-// Mark transfer as Received by the store
+// Mark transfer as Received
 router.patch("/:id/receive", authenticate, async (req, res) => {
   try {
     const updated = await prisma.transfer.update({

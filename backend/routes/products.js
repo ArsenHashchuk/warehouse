@@ -24,7 +24,7 @@ router.get("/", authenticate, async (req, res) => {
 // create product (admin)
 router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
   try {
-    const { name, categoryId, stockAmount, minStock } = req.body;
+    const { name, categoryId, stockAmount, minStock, autoOrder } = req.body;
 
     if (!name || !categoryId) {
       return res
@@ -38,6 +38,7 @@ router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
         categoryId: Number(categoryId),
         stockAmount: stockAmount ? Number(stockAmount) : 0,
         minStock: minStock ? Number(minStock) : 10,
+        autoOrder: Boolean(autoOrder),
       },
     });
 

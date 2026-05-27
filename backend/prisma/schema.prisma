@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 7. Roles: Tech Admin vs Warehouse Worker
+// Roles: Tech Admin vs Warehouse Worker
 enum Role {
   ADMIN
   WORKER
@@ -16,35 +16,33 @@ enum Role {
 model User {
   id       Int    @id @default(autoincrement())
   email    String @unique
-  password String // Hashed password
+  password String
   role     Role   @default(WORKER)
 }
 
-// 9. Categories for products
 model Category {
   id       Int       @id @default(autoincrement())
   name     String    @unique
   products Product[]
 }
 
-// 2 & 3. Products now belong to categories and have stock tracking
 model Product {
   id          Int      @id @default(autoincrement())
   name        String
   categoryId  Int
   category    Category @relation(fields: [categoryId], references: [id])
-  stockAmount Int      @default(0) // Obлік залишків
-  minStock    Int      @default(10) // For the auto-order bonus task
+  stockAmount Int      @default(0)
+  minStock    Int      @default(10)
+  autoOrder   Boolean  @default(false)
 
   orderItems    OrderItem[]
   transferItems TransferItem[]
 }
 
-// 5 & 6. Orders (Inbound from suppliers)
 model Order {
   id         Int         @id @default(autoincrement())
   orderDate  DateTime    @default(now())
-  status     String      @default("PENDING") // PENDING, RECEIVED
+  status     String      @default("PENDING")
   orderItems OrderItem[]
 }
 

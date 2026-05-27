@@ -10,6 +10,7 @@ interface Category {
 interface Product {
   id: number;
   name: string;
+  autoOrder: boolean;
 }
 interface StoreData {
   id: number;
@@ -62,6 +63,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     categoryId: "",
     stockAmount: 0 as number | string,
     minStock: 10 as number | string,
+    autoOrder: false,
   });
   const [productMsg, setProductMsg] = useState<MessageState>({
     type: "",
@@ -112,19 +114,17 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to delete");
 
-      setDeleteTarget(null); // Close confirm modal
+      setDeleteTarget(null);
       refresh();
       if (deleteTarget.type === "products") onProductAdded();
 
-      // Show Success Modal
       setAlertModal({
         title: "Deleted Successfully",
         message: data.message,
         type: "success",
       });
     } catch (err) {
-      setDeleteTarget(null); // Close confirm modal
-      // Show Error Modal
+      setDeleteTarget(null);
       setAlertModal({
         title: "Action Failed",
         message: err instanceof Error ? err.message : "Error deleting item",
@@ -175,6 +175,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
           ...productData,
           stockAmount: Number(productData.stockAmount),
           minStock: Number(productData.minStock),
+          autoOrder: productData.autoOrder,
         }),
       });
       const data = await res.json();
@@ -185,6 +186,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
         categoryId: "",
         stockAmount: "",
         minStock: "",
+        autoOrder: false,
       });
       refresh();
       onProductAdded();
@@ -240,7 +242,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
                 size={20}
                 className={styles.logoIcon}
                 style={{ color: "var(--accent-primary)" }}
-              />{" "}
+              />
               Add New Category
             </h3>
             {categoryMsg.text && (
@@ -302,7 +304,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
                 size={20}
                 className={styles.logoIcon}
                 style={{ color: "var(--accent-primary)" }}
-              />{" "}
+              />
               Add New Product
             </h3>
             {productMsg.text && (
@@ -386,6 +388,29 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
                   />
                 </div>
               </div>
+              <div className={styles.formGroup}>
+                <label
+                  className={styles.label}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={productData.autoOrder}
+                    onChange={(e) =>
+                      setProductData({
+                        ...productData,
+                        autoOrder: e.target.checked,
+                      })
+                    }
+                  />
+                  Enable Auto-Ordering
+                </label>
+              </div>
               <button
                 type="submit"
                 className={`btn btn-primary ${styles.submitBtn}`}
@@ -425,7 +450,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
                 size={20}
                 className={styles.logoIcon}
                 style={{ color: "var(--accent-primary)" }}
-              />{" "}
+              />
               Add New Store
             </h3>
             {storeMsg.text && (

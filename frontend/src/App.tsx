@@ -43,7 +43,6 @@ export default function WarehouseSystem() {
 
   const token = user?.token;
 
-  // Wrap in useCallback so React knows this function is safe and stable
   const refreshProducts = useCallback(async () => {
     if (!token) return;
     try {
@@ -59,6 +58,26 @@ export default function WarehouseSystem() {
       console.error(err);
     }
   }, [token]);
+
+  const refreshOrders = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch("http://localhost:3000/orders", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      setOrders(data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [token]);
+
+  const handleTransferCreated = useCallback(async () => {
+    await Promise.all([refreshProducts(), refreshOrders()]);
+  }, [refreshProducts, refreshOrders]);
 
   // Initial Data Fetch
   useEffect(() => {
@@ -329,7 +348,7 @@ export default function WarehouseSystem() {
               <h2 className={styles.pageHeader}>Store Transfers</h2>
               <Transfers
                 products={products}
-                onTransferCreated={refreshProducts}
+                onTransferCreated={handleTransferCreated}
               />
             </div>
           )}

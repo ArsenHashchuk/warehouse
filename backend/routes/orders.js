@@ -4,7 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Створити замовлення
+// Create order
 router.post("/", async (req, res) => {
   try {
     const { items } = req.body;
@@ -17,10 +17,11 @@ router.post("/", async (req, res) => {
 
     const order = await prisma.order.create({
       data: {
+        status: "PENDING",
         orderItems: {
           create: items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
+            productId: Number(item.productId),
+            quantity: Number(item.quantity),
           })),
         },
       },
@@ -36,17 +37,22 @@ router.post("/", async (req, res) => {
     res.status(201).json(order);
   } catch (error) {
     console.error(error);
-
-    res.status(500).json({
-      error: "Server error",
-    });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// Отримати всі замовлення
+// Get all orders for today
 router.get("/", async (req, res) => {
   try {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const orders = await prisma.order.findMany({
+      where: {
+        orderDate: {
+          gte: startOfToday,
+        },
+      },
       include: {
         orderItems: {
           include: {
@@ -62,14 +68,13 @@ router.get("/", async (req, res) => {
     res.json(orders);
   } catch (error) {
     console.error(error);
-
     res.status(500).json({
       error: "Server error",
     });
   }
 });
 
-// Отримати замовлення по ID
+// Get order by id
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -103,7 +108,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Видалити замовлення
+// Delete order
 router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
