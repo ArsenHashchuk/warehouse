@@ -55,7 +55,7 @@ export default function WarehouseSystem() {
         },
       });
       const data = await res.json();
-      setProducts(data || []);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
     }
@@ -71,7 +71,7 @@ export default function WarehouseSystem() {
         },
       });
       const data = await res.json();
-      setOrders(data || []);
+      setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
     }
@@ -107,8 +107,8 @@ export default function WarehouseSystem() {
           productsRes.json(),
         ]);
 
-        setOrders(ordersData || []);
-        setProducts(productsData || []);
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
+        setProducts(Array.isArray(productsData) ? productsData : []);
       } catch (err) {
         console.error(err);
       }
