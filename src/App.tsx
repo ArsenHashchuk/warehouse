@@ -6,10 +6,10 @@ import {
   Monitor,
   ClipboardList,
   Package,
-  Layers,
   ArrowRightLeft,
   Database,
   Check,
+  Users,
 } from "lucide-react";
 import styles from "./App.module.css";
 
@@ -22,6 +22,7 @@ import Inventory from "./components/Inventory";
 import Login from "./components/Login";
 import Catalog from "./components/Catalog";
 import Transfers from "./components/Transfers";
+import UsersManagement from "./components/UsersManagement";
 import useAppStore from "./store/useAppStore";
 
 export default function WarehouseSystem() {
@@ -275,12 +276,6 @@ export default function WarehouseSystem() {
             <Package size={18} style={{ marginRight: "8px" }} /> Inventory
           </div>
           <div
-            className={`${styles.navItem} ${page === "stock" ? styles.navItemActive : ""}`}
-            onClick={() => setPage("stock")}
-          >
-            <Layers size={18} style={{ marginRight: "8px" }} /> Current Stock
-          </div>
-          <div
             className={`${styles.navItem} ${page === "transfer" ? styles.navItemActive : ""}`}
             onClick={() => setPage("transfer")}
           >
@@ -299,6 +294,13 @@ export default function WarehouseSystem() {
               >
                 <Database size={18} style={{ marginRight: "8px" }} /> Catalog &
                 Categories
+              </div>
+              <div
+                className={`${styles.navItem} ${page === "users" ? styles.navItemActive : ""}`}
+                onClick={() => setPage("users")}
+              >
+                <Users size={18} style={{ marginRight: "8px" }} /> Staff
+                Management
               </div>
             </>
           )}
@@ -322,11 +324,6 @@ export default function WarehouseSystem() {
             </div>
           )}
           {page === "inventory" && <Inventory />}
-          {page === "stock" && (
-            <div>
-              <h2 className={styles.pageHeader}>Current Stock</h2>
-            </div>
-          )}
           {page === "transfer" && (
             <div>
               <h2 className={styles.pageHeader}>Store Transfers</h2>
@@ -340,6 +337,7 @@ export default function WarehouseSystem() {
           {page === "catalog" && user.role === "ADMIN" && (
             <Catalog onProductAdded={refreshProducts} />
           )}
+          {page === "users" && user.role === "ADMIN" && <UsersManagement />}
         </div>
       </div>
       {/* GLOBAL APP INFO MODAL */}

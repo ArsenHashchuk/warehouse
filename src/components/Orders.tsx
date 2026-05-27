@@ -50,7 +50,6 @@ export default function Orders({
   createOrder,
   deleteOrder,
 }: OrdersProps) {
-  // Custom Modal States
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 

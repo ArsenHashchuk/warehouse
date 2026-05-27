@@ -9,6 +9,7 @@ const productsRoutes = require("./routes/products");
 const ordersRoutes = require("./routes/orders");
 const storesRoutes = require("./routes/stores");
 const transfersRoutes = require("./routes/transfers");
+const usersRoutes = require("./routes/users");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ app.use("/products", productsRoutes);
 app.use("/orders", ordersRoutes);
 app.use("/stores", storesRoutes);
 app.use("/transfers", transfersRoutes);
+app.use("/users", usersRoutes);
 
 app.get("/", (req, res) => {
   res.json({

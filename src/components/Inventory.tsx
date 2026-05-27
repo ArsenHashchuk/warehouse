@@ -59,7 +59,6 @@ export default function Inventory() {
     fetchData();
   }, [user?.token]);
 
-  // Apply Search and Category Filters
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
       .toLowerCase()
