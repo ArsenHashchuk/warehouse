@@ -48,4 +48,22 @@ router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
   }
 });
 
+// Delete a product (ADMIN ONLY)
+router.delete("/:id", authenticate, authorize(["ADMIN"]), async (req, res) => {
+  try {
+    await prisma.product.delete({
+      where: { id: Number(req.params.id) },
+    });
+    res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    if (err.code === "P2003") {
+      return res.status(400).json({
+        error:
+          "Cannot delete product: It is attached to existing orders or transfers.",
+      });
+    }
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;

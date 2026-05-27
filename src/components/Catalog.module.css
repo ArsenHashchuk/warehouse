@@ -92,3 +92,89 @@
   background-position: calc(100% - 0.175rem) center;
   padding-right: 2rem;
 }
+
+.listSection {
+  margin-top: 24px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+
+.listTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.listContainer::-webkit-scrollbar {
+  width: 6px;
+}
+.listContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+.listContainer::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 10px;
+}
+.listContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.4);
+}
+:global(.dark) .listContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+:global(.dark) .listContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 10px 14px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.listItem:hover {
+  border-color: var(--border-color);
+  background: rgba(128, 128, 128, 0.04);
+}
+
+.deleteIconBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.deleteIconBtn:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+:global(.dark) .deleteIconBtn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}

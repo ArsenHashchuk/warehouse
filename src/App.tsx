@@ -21,6 +21,7 @@ import Orders, {
 import Inventory from "./components/Inventory";
 import Login from "./components/Login";
 import Catalog from "./components/Catalog";
+import Transfers from "./components/Transfers";
 import useAppStore from "./store/useAppStore";
 
 export default function WarehouseSystem() {
@@ -33,8 +34,11 @@ export default function WarehouseSystem() {
     { productId: "", quantity: 1 },
   ]);
 
-  // State to control the theme dropdown menu
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [appAlert, setAppAlert] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   const token = user?.token;
 
@@ -118,9 +122,6 @@ export default function WarehouseSystem() {
       return;
     }
 
-    const confirmCreate = window.confirm("Submit order?");
-    if (!confirmCreate) return;
-
     try {
       const res = await fetch("http://localhost:3000/orders", {
         method: "POST",
@@ -150,18 +151,21 @@ export default function WarehouseSystem() {
       const data = await refreshRes.json();
       setOrders(data);
       setItems([{ productId: "", quantity: 1 }]);
-      alert("Order created successfully!");
+
+      setAppAlert({
+        title: "Order Dispatched",
+        message: "Your inbound order has been created successfully!",
+      });
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "An error occurred");
+      setAppAlert({
+        title: "Action Failed",
+        message: err instanceof Error ? err.message : "An error occurred",
+      });
     }
   };
 
   const deleteOrder = async (id: number) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this order?",
-    );
-    if (!confirmDelete) return;
     try {
       await fetch(`http://localhost:3000/orders/${id}`, {
         method: "DELETE",
@@ -177,7 +181,6 @@ export default function WarehouseSystem() {
 
   return (
     <div className={styles.appWrapper}>
-      {/* TOPBAR */}
       <div className={styles.topbar}>
         <div className={styles.logo}>
           <Warehouse className={styles.logoIcon} size={22} /> WarehousePro
@@ -327,15 +330,35 @@ export default function WarehouseSystem() {
           {page === "transfer" && (
             <div>
               <h2 className={styles.pageHeader}>Store Transfers</h2>
+              <Transfers
+                products={products}
+                onTransferCreated={refreshProducts}
+              />
             </div>
           )}
 
-          {/* CATALOG COMPONENT WITH REFRESH PROP */}
           {page === "catalog" && user.role === "ADMIN" && (
             <Catalog onProductAdded={refreshProducts} />
           )}
         </div>
       </div>
+      {/* GLOBAL APP INFO MODAL */}
+      {appAlert && (
+        <div className="modal-overlay" style={{ zIndex: 99999 }}>
+          <div className="modal-card">
+            <h3 className="modal-header">{appAlert.title}</h3>
+            <p className="modal-body">{appAlert.message}</p>
+            <div className="modal-actions">
+              <button
+                className="btn btn-primary"
+                onClick={() => setAppAlert(null)}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

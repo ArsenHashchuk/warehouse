@@ -52,4 +52,22 @@ router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
   }
 });
 
+// Delete a category (ADMIN ONLY)
+router.delete("/:id", authenticate, authorize(["ADMIN"]), async (req, res) => {
+  try {
+    await prisma.category.delete({
+      where: { id: Number(req.params.id) },
+    });
+    res.json({ message: "Category deleted successfully" });
+  } catch (err) {
+    // If Prisma throws a foreign key constraint error, catch it
+    if (err.code === "P2003") {
+      return res
+        .status(400)
+        .json({ error: "Cannot delete category: It still contains products." });
+    }
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;
