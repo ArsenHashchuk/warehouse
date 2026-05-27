@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
-import { Truck, Store, X, CheckCircle2, PackageOpen } from "lucide-react";
+import {
+  Truck,
+  Store,
+  X,
+  CheckCircle2,
+  PackageOpen,
+  Download,
+} from "lucide-react";
 import useAppStore from "../store/useAppStore";
 import styles from "./Transfers.module.css";
-import { type Product, type NewItem } from "./Orders";
+import { type Product, type NewItem, type Order } from "./Orders";
 
 interface StoreData {
   id: number;
@@ -33,6 +40,7 @@ export default function Transfers({
   const { user } = useAppStore();
   const [stores, setStores] = useState<StoreData[]>([]);
   const [transfers, setTransfers] = useState<TransferData[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
 
   // Custom Modal State
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -50,12 +58,14 @@ export default function Transfers({
         Authorization: `Bearer ${user.token}`,
       };
       try {
-        const [transfersRes, storesRes] = await Promise.all([
+        const [transfersRes, storesRes, pendingRes] = await Promise.all([
           fetch("http://localhost:3000/transfers", { headers }),
           fetch("http://localhost:3000/stores", { headers }),
+          fetch("http://localhost:3000/orders/pending-receipts", { headers }),
         ]);
         setTransfers(await transfersRes.json());
         setStores(await storesRes.json());
+        setPendingOrders(await pendingRes.json());
       } catch (err) {
         console.error(err);
       }
@@ -64,6 +74,7 @@ export default function Transfers({
   }, [user?.token]);
 
   const addItem = () => setItems([...items, { productId: "", quantity: 1 }]);
+
   const updateItem = (
     index: number,
     field: keyof NewItem,
@@ -73,8 +84,30 @@ export default function Transfers({
     updated[index] = { ...updated[index], [field]: value };
     setItems(updated);
   };
+
   const removeItem = (index: number) =>
     setItems(items.filter((_, i) => i !== index));
+
+  // Receive Inbound Order from Supplier
+  const receiveInboundOrder = async (orderId: number) => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/orders/${orderId}/receive`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${user?.token}` },
+        },
+      );
+
+      if (!res.ok) throw new Error("Failed to receive order");
+
+      setPendingOrders(pendingOrders.filter((o) => o.id !== orderId));
+      onTransferCreated();
+    } catch (err) {
+      console.error(err);
+      alert("Error receiving items.");
+    }
+  };
 
   // Validation before opening modal
   const requestTransfer = () => {
@@ -140,6 +173,85 @@ export default function Transfers({
 
   return (
     <>
+      {/* INBOUND DELIVERIES BLOCK (Pending Supplier Orders) */}
+      <div className={styles.card} style={{ marginBottom: "20px" }}>
+        <h3
+          className={styles.sectionTitle}
+          style={{ display: "flex", alignItems: "center", gap: "8px" }}
+        >
+          <Download size={20} color="var(--accent-primary)" />
+          Inbound Deliveries (Pending Receipt)
+        </h3>
+
+        {pendingOrders.length === 0 ? (
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "14px",
+              padding: "10px 0",
+            }}
+          >
+            No pending inbound deliveries from previous days.
+          </p>
+        ) : (
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Items to Receive</th>
+                  <th>Order Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td
+                      style={{
+                        fontFamily: "monospace",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      #{order.id}
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                        }}
+                      >
+                        {order.orderItems.map((item) => (
+                          <div
+                            key={item.productId}
+                            style={{ fontSize: "13px" }}
+                          >
+                            {item.quantity}x {item.product?.name}
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td>{new Date(order.orderDate).toLocaleDateString()}</td>
+                    <td>
+                      <button
+                        className="btn btn-primary"
+                        style={{ fontSize: "12px", padding: "6px 12px" }}
+                        onClick={() => receiveInboundOrder(order.id)}
+                      >
+                        Receive to Warehouse
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* DISPATCH TRANSFER BLOCK */}
       <div className={styles.card}>
         <h3 className={styles.sectionTitle}>
           <Truck size={20} color="var(--accent-primary)" /> Dispatch New
@@ -219,7 +331,8 @@ export default function Transfers({
         </div>
       </div>
 
-      <div className={styles.tableContainer}>
+      {/* ACTIVE TRANSFERS TABLE */}
+      <div className={styles.tableContainer} style={{ marginTop: "20px" }}>
         <table className={styles.table}>
           <thead>
             <tr>

@@ -80,9 +80,6 @@ router.post("/", authenticate, async (req, res) => {
                 where: { id: itemToUpdate.id },
                 data: { quantity: neededQuantity },
               });
-              console.log(
-                `Updated quantity for existing auto-order: ${updatedProduct.name}`,
-              );
             }
           } else {
             await tx.order.create({
@@ -99,9 +96,6 @@ router.post("/", authenticate, async (req, res) => {
                 },
               },
             });
-            console.log(
-              `Auto-order created for product: ${updatedProduct.name}`,
-            );
           }
         }
       }

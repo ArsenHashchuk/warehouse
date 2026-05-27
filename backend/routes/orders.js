@@ -53,6 +53,7 @@ router.get("/", async (req, res) => {
         orderDate: {
           gte: startOfToday,
         },
+        status: "PENDING",
       },
       include: {
         orderItems: {
@@ -89,6 +90,61 @@ router.get("/all", authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error", details: err.message });
+  }
+});
+
+router.get("/pending-receipts", async (req, res) => {
+  try {
+    const pendingOrders = await prisma.order.findMany({
+      where: {
+        status: "PENDING",
+      },
+      include: {
+        orderItems: { include: { product: true } },
+      },
+      orderBy: { orderDate: "asc" },
+    });
+    res.json(pendingOrders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Receive inbound order
+router.patch("/:id/receive", async (req, res) => {
+  try {
+    const orderId = Number(req.params.id);
+
+    const result = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { orderItems: true },
+      });
+
+      if (!order || order.status !== "PENDING") {
+        throw new Error("Order not found or already processed");
+      }
+
+      for (const item of order.orderItems) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stockAmount: { increment: item.quantity } },
+        });
+      }
+
+      const updatedOrder = await tx.order.update({
+        where: { id: orderId },
+        data: { status: "COMPLETED" },
+      });
+
+      return updatedOrder;
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message || "Server error" });
   }
 });
 
