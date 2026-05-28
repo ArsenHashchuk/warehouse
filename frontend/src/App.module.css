@@ -185,3 +185,41 @@
 .themeDropdownItem:hover {
   background: rgba(128, 128, 128, 0.08);
 }
+
+@media (max-width: 768px) {
+  .bodyWrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navSection,
+  .userInfo {
+    display: none;
+  }
+
+  .navItem {
+    margin-right: 10px;
+    margin-bottom: 0;
+    padding: 8px 12px;
+  }
+
+  .mainContent {
+    padding: 15px 10px;
+  }
+}

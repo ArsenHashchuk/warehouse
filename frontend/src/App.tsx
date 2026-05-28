@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Warehouse,
   Sun,
   Moon,
   Monitor,
@@ -205,7 +204,14 @@ export default function WarehouseSystem() {
     <div className={styles.appWrapper}>
       <div className={styles.topbar}>
         <div className={styles.logo}>
-          <Warehouse className={styles.logoIcon} size={22} /> WarehousePro
+          <img
+            src="/favicon.svg"
+            alt="WarehousePro Logo"
+            className={styles.logoIcon}
+            width="22"
+            height="22"
+          />
+          WarehousePro
         </div>
 
         <div className={styles.topbarRight}>
