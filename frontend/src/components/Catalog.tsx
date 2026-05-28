@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Tags, PackagePlus, Store, Trash2 } from "lucide-react";
+import { Tags, PackagePlus, Store, Trash2, Pencil } from "lucide-react";
 import useAppStore from "../store/useAppStore";
 import styles from "./Catalog.module.css";
 import { API_URL } from "../config";
@@ -12,6 +12,8 @@ interface Product {
   id: number;
   name: string;
   autoOrder: boolean;
+  categoryId: number;
+  minStock: number;
 }
 interface StoreData {
   id: number;
@@ -46,6 +48,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     type: "success" | "error";
   } | null>(null);
 
+  // --- CREATE STATES ---
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [categoryMsg, setCategoryMsg] = useState<MessageState>({
     type: "",
@@ -69,6 +72,10 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
     type: "",
     text: "",
   });
+
+  // --- EDIT STATE ---
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editMsg, setEditMsg] = useState<MessageState>({ type: "", text: "" });
 
   const fetchData = async (authToken: string) => {
     const headers = {
@@ -120,7 +127,7 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
 
       setAlertModal({
         title: "Deleted Successfully",
-        message: data.message,
+        message: data.message || "Item deleted.",
         type: "success",
       });
     } catch (err) {
@@ -217,6 +224,44 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
       refresh();
     } catch (err) {
       setStoreMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "An unknown error occurred",
+      });
+    }
+  };
+
+  const handleUpdateProduct = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    setEditMsg({ type: "", text: "" });
+
+    try {
+      const res = await fetch(`${API_URL}/products/${editingProduct.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: editingProduct.name,
+          categoryId: Number(editingProduct.categoryId),
+          minStock: Number(editingProduct.minStock),
+          autoOrder: editingProduct.autoOrder,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error updating product");
+
+      setEditingProduct(null);
+      refresh();
+      onProductAdded(); // Refreshes app-level product state
+      setAlertModal({
+        title: "Success",
+        message: "Product updated successfully!",
+        type: "success",
+      });
+    } catch (err) {
+      setEditMsg({
         type: "error",
         text: err instanceof Error ? err.message : "An unknown error occurred",
       });
@@ -424,19 +469,30 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
                 {products.map((prod) => (
                   <div key={prod.id} className={styles.listItem}>
                     <span>{prod.name}</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setDeleteTarget({
-                          type: "products",
-                          id: prod.id,
-                          name: prod.name,
-                        })
-                      }
-                      className={styles.deleteIconBtn}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditingProduct(prod)}
+                        className={styles.deleteIconBtn}
+                        title="Edit Product"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDeleteTarget({
+                            type: "products",
+                            id: prod.id,
+                            name: prod.name,
+                          })
+                        }
+                        className={styles.deleteIconBtn}
+                        title="Delete Product"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -526,6 +582,118 @@ export default function Catalog({ onProductAdded }: CatalogProps) {
           </div>
         </div>
       </div>
+
+      {/* EDIT PRODUCT MODAL */}
+      {editingProduct && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h3 className="modal-header">Edit Product</h3>
+            {editMsg.text && (
+              <div
+                className={`${styles.message} ${styles[editMsg.type]}`}
+                style={{ marginBottom: "15px" }}
+              >
+                {editMsg.text}
+              </div>
+            )}
+            <form
+              onSubmit={handleUpdateProduct}
+              style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+            >
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Product Name</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={editingProduct.name}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      name: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Category</label>
+                <select
+                  className="input-field"
+                  value={editingProduct.categoryId}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      categoryId: Number(e.target.value),
+                    })
+                  }
+                  required
+                >
+                  <option value="" disabled>
+                    Select a category
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Minimum Stock</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="input-field"
+                  value={editingProduct.minStock}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      minStock:
+                        e.target.value === "" ? 0 : Number(e.target.value),
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label
+                  className={styles.label}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={editingProduct.autoOrder}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        autoOrder: e.target.checked,
+                      })
+                    }
+                  />
+                  Enable Auto-Ordering
+                </label>
+              </div>
+              <div className="modal-actions" style={{ marginTop: "10px" }}>
+                <button
+                  type="button"
+                  className="btn btn-cancel"
+                  onClick={() => setEditingProduct(null)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* CONFIRMATION MODAL */}
       {deleteTarget && (

@@ -49,6 +49,28 @@ router.post("/", authenticate, authorize(["ADMIN"]), async (req, res) => {
   }
 });
 
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, categoryId, minStock, autoOrder } = req.body;
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: Number(id) },
+      data: {
+        name,
+        categoryId: Number(categoryId),
+        minStock: Number(minStock),
+        autoOrder: Boolean(autoOrder),
+      },
+    });
+
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
 // Delete a product (ADMIN ONLY)
 router.delete("/:id", authenticate, authorize(["ADMIN"]), async (req, res) => {
   try {
