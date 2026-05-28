@@ -38,6 +38,8 @@ interface OrdersProps {
   removeItem: (index: number) => void;
   createOrder: () => void;
   deleteOrder: (id: number) => void;
+  isSubmitting?: boolean;
+  deletingId?: number | null;
 }
 
 export default function Orders({
@@ -49,6 +51,8 @@ export default function Orders({
   removeItem,
   createOrder,
   deleteOrder,
+  isSubmitting,
+  deletingId,
 }: OrdersProps) {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
@@ -110,8 +114,12 @@ export default function Orders({
           <button onClick={addItem} className="btn btn-outline">
             Add Item
           </button>
-          <button onClick={handleRequestSubmit} className="btn btn-primary">
-            Submit Order
+          <button
+            onClick={handleRequestSubmit}
+            className="btn btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit Order"}
           </button>
         </div>
       </div>
@@ -152,6 +160,7 @@ export default function Orders({
                       <button
                         className={styles.deleteBtn}
                         onClick={() => handleRequestDelete(order.id)}
+                        disabled={deletingId === order.id}
                       >
                         <Trash2
                           size={14}
@@ -160,7 +169,7 @@ export default function Orders({
                             verticalAlign: "text-bottom",
                           }}
                         />{" "}
-                        Delete
+                        {deletingId === order.id ? "Deleting..." : "Delete"}
                       </button>
                     </td>
                   </tr>

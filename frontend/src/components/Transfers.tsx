@@ -50,6 +50,8 @@ export default function Transfers({
   const [items, setItems] = useState<NewItem[]>([
     { productId: "", quantity: 1 },
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [processingId, setProcessingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user?.token) return;
@@ -91,6 +93,7 @@ export default function Transfers({
 
   // Receive Inbound Order from Supplier
   const receiveInboundOrder = async (orderId: number) => {
+    setProcessingId(orderId);
     try {
       const res = await fetch(`${API_URL}/orders/${orderId}/receive`, {
         method: "PATCH",
@@ -104,6 +107,8 @@ export default function Transfers({
     } catch (err) {
       console.error(err);
       alert("Error receiving items.");
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -120,7 +125,8 @@ export default function Transfers({
 
   // Execution when confirmed
   const executeTransfer = async () => {
-    setIsConfirmOpen(false);
+    setIsSubmitting(true);
+
     const validItems = items.filter(
       (item) => item.productId !== "" && item.quantity > 0,
     );
@@ -149,13 +155,18 @@ export default function Transfers({
       setTransfers(await refreshRes.json());
       setItems([{ productId: "", quantity: 1 }]);
       setSelectedStore("");
+
+      setIsConfirmOpen(false);
       onTransferCreated();
     } catch (err) {
       alert(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const receiveTransfer = async (id: number) => {
+    setProcessingId(id);
     try {
       await fetch(`${API_URL}/transfers/${id}/receive`, {
         method: "PATCH",
@@ -166,6 +177,8 @@ export default function Transfers({
       );
     } catch (err) {
       console.error(err);
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -237,8 +250,11 @@ export default function Transfers({
                         className="btn btn-primary"
                         style={{ fontSize: "12px", padding: "6px 12px" }}
                         onClick={() => receiveInboundOrder(order.id)}
+                        disabled={processingId === order.id}
                       >
-                        Receive to Warehouse
+                        {processingId === order.id
+                          ? "Receiving..."
+                          : "Receive to Warehouse"}
                       </button>
                     </td>
                   </tr>
@@ -323,8 +339,12 @@ export default function Transfers({
           <button onClick={addItem} className="btn btn-outline">
             Add Product
           </button>
-          <button onClick={requestTransfer} className="btn btn-primary">
-            Dispatch Transfer
+          <button
+            onClick={requestTransfer}
+            className="btn btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Dispatching..." : "Dispatch Transfer"}
           </button>
         </div>
       </div>
@@ -415,8 +435,11 @@ export default function Transfers({
                         className="btn btn-outline"
                         style={{ fontSize: "12px", padding: "6px 12px" }}
                         onClick={() => receiveTransfer(transfer.id)}
+                        disabled={processingId === transfer.id}
                       >
-                        Mark Received
+                        {processingId === transfer.id
+                          ? "Updating..."
+                          : "Mark Received"}
                       </button>
                     )}
                   </td>

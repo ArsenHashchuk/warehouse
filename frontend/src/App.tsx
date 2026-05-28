@@ -35,6 +35,8 @@ export default function WarehouseSystem() {
   const [items, setItems] = useState<NewItem[]>([
     { productId: "", quantity: 1 },
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [appAlert, setAppAlert] = useState<{
@@ -143,6 +145,8 @@ export default function WarehouseSystem() {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const res = await fetch(`${API_URL}/orders`, {
         method: "POST",
@@ -183,10 +187,13 @@ export default function WarehouseSystem() {
         title: "Action Failed",
         message: err instanceof Error ? err.message : "An error occurred",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const deleteOrder = async (id: number) => {
+    setDeletingId(id);
     try {
       await fetch(`${API_URL}/orders/${id}`, {
         method: "DELETE",
@@ -195,6 +202,8 @@ export default function WarehouseSystem() {
       setOrders(orders.filter((order) => order.id !== id));
     } catch (err) {
       console.error(err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -354,6 +363,8 @@ export default function WarehouseSystem() {
                 removeItem={removeItem}
                 createOrder={createOrder}
                 deleteOrder={deleteOrder}
+                isSubmitting={isSubmitting}
+                deletingId={deletingId}
               />
             </div>
           )}
